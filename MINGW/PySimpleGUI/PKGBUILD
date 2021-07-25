@@ -1,0 +1,41 @@
+_realname=pysimplegui
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+_module='PySimpleGUI'
+pkgver=4.45.0
+pkgrel=1
+pkgdesc='Super-simple to create custom GUI'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+license=('LGPLv3+')
+url='https://github.com/MikeTheWatchGuy/PySimpleGUI'
+depends=("${MINGW_PACKAGE_PREFIX}-python" 
+"${MINGW_PACKAGE_PREFIX}-tk")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools")
+checkdepends=("${MINGW_PACKAGE_PREFIX}-python-pytest-runner")
+source=(${pkgbase}-${pkgver}.tar.gz::https://pypi.python.org/packages/source/P/PySimpleGUI/PySimpleGUI-${pkgver}.tar.gz)
+sha256sums=('7152c7b45924b7ac8c461df8b3bfd7e163c731565b3220f20781452f45b39263')
+
+prepare() {
+  cp -a "$srcdir"/"${_module}"-$pkgver "${_realname}"-py-"${pkgver}"
+}
+
+build() {
+  cd "${srcdir}"/"${_realname}"-py-"${pkgver}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  "${MINGW_PREFIX}"/bin/python setup.py build
+}
+
+package() {
+  cd "${_realname}"-py-"${pkgver}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  "${MINGW_PREFIX}"/bin/python setup.py install --skip-build \
+    --prefix="${MINGW_PREFIX}" --root=${pkgdir} --optimize=1
+  
+}
+# vim:set ts=2 sw=2 et:

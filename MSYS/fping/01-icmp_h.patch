@@ -1,0 +1,32 @@
+--- icmp.h	2021-05-20 17:06:35.936477300 -0300
++++ icmp.h	2021-05-20 17:06:20.926426300 -0300
+@@ -15,11 +15,12 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-#ifndef __NETINET_IP_ICMP_H
+-#define __NETINET_IP_ICMP_H    1
++#ifndef __CYGWIN_H
++#define __CYGWIN_H 1
+ 
++#include <sys/cdefs.h>
+ #include <sys/types.h>
+-#include <stdint.h>
++
+ 
+ __BEGIN_DECLS
+ 
+@@ -90,7 +91,12 @@
+ #define ICMP_EXC_FRAGTIME	1	/* Fragment Reass time exceeded	*/
+ 
+ 
+-#ifdef __USE_MISC
++/* #ifdef __USE_BSD */
++#ifndef __USE_BSD_CYGWIN
++#define __USE_BSD_CYGWIN 1
++#endif
++
++#ifdef __USE_BSD_CYGWIN
+ /*
+  * Copyright (c) 1982, 1986, 1993
+  *	The Regents of the University of California.  All rights reserved.

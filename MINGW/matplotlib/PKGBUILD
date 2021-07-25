@@ -1,0 +1,67 @@
+_realname=matplotlib
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+pkgver=3.4.2
+pkgrel=1
+pkgdesc="A python plotting library, making publication quality plots (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+url='https://matplotlib.org/'
+license=('custom')
+depends=("${MINGW_PACKAGE_PREFIX}-python-pytz"
+         "${MINGW_PACKAGE_PREFIX}-python-numpy"
+         "${MINGW_PACKAGE_PREFIX}-python-cycler"
+         "${MINGW_PACKAGE_PREFIX}-python-dateutil"
+         "${MINGW_PACKAGE_PREFIX}-python-pyparsing"
+         "${MINGW_PACKAGE_PREFIX}-python-pillow"
+         "${MINGW_PACKAGE_PREFIX}-python-kiwisolver"
+         "${MINGW_PACKAGE_PREFIX}-freetype"
+         "${MINGW_PACKAGE_PREFIX}-libpng"
+         "${MINGW_PACKAGE_PREFIX}-qhull")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python"
+             "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+             "${MINGW_PACKAGE_PREFIX}-python-certifi")
+optdepends=("${MINGW_PACKAGE_PREFIX}-python-pyqt5: Qt5Agg/Qt5Cairo backend"
+            "${MINGW_PACKAGE_PREFIX}-gtk3: GTK3Agg/GTK3Cairo backend"
+            "${MINGW_PACKAGE_PREFIX}-python-gobject: GTK3Agg/GTK3Cairo backend"
+            "${MINGW_PACKAGE_PREFIX}-python-cairo: cairo/GTK3Cairo/Qt5Cairo backend"
+            "${MINGW_PACKAGE_PREFIX}-python-tornado: WebAgg backend")
+_tag=71c0c77108b849d2c2702601269c3ea7d63a53d9
+
+source=(git+https://github.com/matplotlib/matplotlib.git#tag=${_tag}?signed
+        setupext.py.patch)
+sha256sums=('SKIP'
+            '43a13325f23d2be8ef3b1c8f14be0640df690c52742101beb21f7c4eaad30425')
+validpgpkeys=(23CAB59E3332F94D26BEF0378D86E7FAE5EB0C10) # Elliott Sales de Andrade <quantum.analyst@gmail.com>
+
+
+prepare() {
+  cd "${srcdir}/${_realname}"
+  patch -p1 -i "${srcdir}"/setupext.py.patch
+  # sed -e 's|#system_freetype = False|system_freetype = True|' -e 's|#system_qhull = False|system_qhull = True|' setup.cfg.template > setup.cfg
+  cd "${srcdir}"
+  rm -rf python-build-"${CARCH}" | true
+  cp -r "${_realname}" "python-build-${CARCH}"
+}
+
+build() {
+  cd "${srcdir}/python-build-${CARCH}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+    "${MINGW_PREFIX}"/bin/python setup.py build
+}
+
+package() {
+  cd "${srcdir}/python-build-${CARCH}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+   "${MINGW_PREFIX}"/bin/python setup.py install -O1 --skip-build \
+   --root="${pkgdir}" --prefix="${MINGW_PREFIX}"
+
+  install -Dm644 doc/users/license.rst "${pkgdir}${MINGW_PREFIX}"/share/licenses/python-matplotlib/LICENSE
+  # Needed since https://github.com/matplotlib/matplotlib/pull/14170
+  # rm -r "${pkgdir}"$("${MINGW_PREFIX}"/bin/python -c "import site; print(site.getsitepackages()[0])")/{matplotlib,mpl_toolkits}/tests/
+}

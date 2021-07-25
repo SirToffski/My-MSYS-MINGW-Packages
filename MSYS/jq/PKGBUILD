@@ -1,0 +1,24 @@
+pkgname=jq
+pkgver=1.6
+pkgrel=4
+pkgdesc='Command-line JSON processor'
+arch=('x86_64')
+url='https://stedolan.github.io/jq/'
+license=('MIT')
+depends=('oniguruma')
+makedepends=('autoconf' 'automake' 'bison' 'flex' 'python')
+source=("https://github.com/stedolan/jq/releases/download/${pkgname}-${pkgver}/${pkgname}-${pkgver}.zip")
+sha512sums=('7bb1f56d1ba2764fa90ff49da68e8fb0a5b349747799aa7cf25aa7d0135a375a28ec9e08f649b5faf942073ef4da7a82c33f74a1d326d752075090f510d92481')
+
+build() {
+    cd "${pkgname}-${pkgver}"
+    autoreconf -i
+    ./configure --prefix=/usr --disable-maintainer-mode
+    make
+}
+
+package() {
+    cd "${pkgname}-${pkgver}"
+    make DESTDIR="${pkgdir}" prefix=/usr install
+    install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
