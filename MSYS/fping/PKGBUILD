@@ -14,8 +14,8 @@ icmp.h
 01-icmp_h.patch)
 sha512sums=('c843f7bb7c4e3289c4dd9eb8ae2ab93a363316c0000aac9187f79580a3d2505df179f2e0ae9e0a791c74bfc9e17c476874f8e122dfa6ad74930498c4e02d0de3'
             'SKIP'
-            'SKIP'
-            'SKIP')
+            'e117ea6831d98b3b3a80dd823a7cef573bbed934ec0bf9bcee220642e9fcc98dbefa8e8fe18eafce1ee6a23fbfa7e5d6db845ab45c43173a95ac4da473b448dd'
+            'ff2a169e357af80b7544a82bf3859a288047a000f3e57e9dc8aa973d279d0d0a0d345ee31a3238eb48e5412495b143f6d3de42fa084542c9f1765da624fbf857')
 b2sums=('6dbb6708ecb55c1f1281bcd9e298475a1ad3a21aa81d8488b61cb39ad07d1d7285247a3c39883cbaae0b1a0e4403b6340ea7ec43411b81546f0e8eeefb02ef88'
         'SKIP'
         'SKIP'
