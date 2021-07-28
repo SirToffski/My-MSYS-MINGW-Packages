@@ -19,7 +19,7 @@ $ makepkg -sCLf
 ## MINGW
 
 ```bash
-$ cd fping/
+$ cd pandas/
 
 # To build and install
 $ MINGW_ARCH=mingw64 makepkg-mingw -sCLfi
