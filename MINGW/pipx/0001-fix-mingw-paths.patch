@@ -1,0 +1,23 @@
+diff '--color=auto' --unified --recursive --text python-build-x86_64/src/pipx/util.py 001-python-build-x86_64/src/pipx/util.py
+--- python-build-x86_64/src/pipx/util.py	2021-07-28 15:24:03.876495800 -0300
++++ 001-python-build-x86_64/src/pipx/util.py	2021-07-28 15:25:56.080379500 -0300
+@@ -5,6 +5,7 @@
+ import subprocess
+ import sys
+ import textwrap
++import venv
+ from pathlib import Path
+ from typing import (
+     Any,
+@@ -77,8 +78,9 @@
+ if WINDOWS:
+ 
+     def get_venv_paths(root: Path) -> Tuple[Path, Path]:
+-        bin_path = root / "Scripts"
+-        python_path = bin_path / "python.exe"
++        root_paths = venv.EnvBuilder().ensure_directories(root)
++        bin_path = Path(root_paths.bin_path)
++        python_path = Path(root_paths.env_exe)
+         return bin_path, python_path
+ 
+ 

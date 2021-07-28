@@ -1,0 +1,65 @@
+_realname=pipx
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+pkgver=0.16.3
+pkgrel=1
+pkgdesc='Install and Run Python Applications in Isolated Environments'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+url='https://github.com/pipxproject/pipx'
+license=('MIT' 'BSD')
+depends=("${MINGW_PACKAGE_PREFIX}-python"
+"${MINGW_PACKAGE_PREFIX}-python-userpath"
+"${MINGW_PACKAGE_PREFIX}-python-argcomplete"
+"${MINGW_PACKAGE_PREFIX}-python-colorama"
+"${MINGW_PACKAGE_PREFIX}-python-packaging")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools")
+checkdepends=("${MINGW_PACKAGE_PREFIX}-python-tox"
+"${MINGW_PACKAGE_PREFIX}-python-pytest")
+source=("$_realname-$pkgver.tar.gz::$url/archive/$pkgver.tar.gz"
+'0001-fix-mingw-paths.patch')
+sha512sums=('eaa40fddc90ec89c3ccb233f1fc782cece4638238f955ce9fa1acda203e8a21f3ab081bb005dfbd5d13cc88c61e1fa08756875234d22835f3d9082490621c2d8'
+'c8d6e3ef15c9efa04440cb478a78e9fea6ed796a8f22438dfcc24992014f11400679dfbda9a71ba7b77d73f6dcb6000683d4f86e9fbc9799a1e3094ae170366c')
+
+
+prepare() {
+  rm -rf python-build-${CARCH}| true
+  cp -r "${_realname}-${pkgver}" "python-build-${CARCH}"
+  cd "${srcdir}/python-build-${CARCH}"
+  # https://github.com/pypa/pipx/issues/701#issuecomment-859031355
+  patch -p1 -i ${srcdir}/0001-fix-mingw-paths.patch
+}
+
+
+build() {
+  cd "python-build-${CARCH}"
+  ${MINGW_PREFIX}/bin/python setup.py build
+}
+
+#check() {
+#  cd $_pkgname-$pkgver
+#
+#  nox
+#}
+
+package() {
+  cd "python-build-${CARCH}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+    "${MINGW_PREFIX}"/bin/python setup.py install --prefix=${MINGW_PREFIX#\/} --root="${pkgdir}" --optimize=1 --skip-build -v
+
+  local PREFIX_WIN=$(cygpath -wm "${MINGW_PREFIX}")
+  # fix python command in files
+  for _f in "${pkgdir}${MINGW_PREFIX}"/bin/*.py; do
+    sed -i 's/\#\!.*//' "$_f"
+  done
+
+
+  install -Dm644 LICENSE \
+    "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
+
+# vim:set ts=2 sw=2 et:
