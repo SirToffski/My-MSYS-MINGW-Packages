@@ -1,0 +1,64 @@
+_realname=argcomplete
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+provides=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+replaces=("${MINGW_PACKAGE_PREFIX}-python3-${_realname}")
+pkgver=1.12.3
+_gitcommit=ce54b6dfd51f9f01b4ef85bb8692a9f804a11771
+pkgrel=1
+pkgdesc='Easy, extensible command line tab completion of arguments for your Python script'
+url='https://github.com/kislyuk/argcomplete'
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+license=('Apache')
+depends=("${MINGW_PACKAGE_PREFIX}-python")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-setuptools" "git")
+checkdepends=("${MINGW_PACKAGE_PREFIX}-python-pexpect" 'tcsh' 'fish')
+source=(${_realname}::"git+https://github.com/kislyuk/${_realname}#commit=${_gitcommit}?signed")
+sha512sums=('SKIP')
+validpgpkeys=('29BCBADB4ECAAAC2382699388AFAFCD242818A52') # Andrey Kislyuk (weaver) <kislyuk@ocf.berkeley.edu>
+
+
+prepare() {
+  cp -a ${_realname} "python-build-${CARCH}"
+}
+
+pkgver() {
+  cd "${srcdir}/python-build-${CARCH}"
+  git describe --tags --match 'v*' | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+  cd "python-build-${CARCH}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+  ${MINGW_PREFIX}/bin/python setup.py build
+}
+
+# check() {
+#   cd ${_realname}-py-${pkgver}
+# 
+#   sed -i -E 's/os\.uname/platform\.uname/g' test/test.py
+#   sed -i 's/import os, sys, shutil, argparse, subprocess, unittest, contextlib/import os, platform, sys, shutil, argparse, subprocess, unittest, contextlib/g' test/test.py
+# 
+# 
+#    MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+#    LANG=en_US.UTF-8 \
+#    LC_CTYPE="en_US.UTF-8" \
+#    LC_NUMERIC="en_US.UTF-8" \
+#    LC_TIME="en_US.UTF-8" \
+#    LC_COLLATE="en_US.UTF-8" \
+#    LC_MONETARY="en_US.UTF-8" \
+#    LC_MESSAGES="en_US.UTF-8" ${MINGW_PREFIX}/bin/python test/test.py -v
+# }
+
+package() {
+  cd "python-build-${CARCH}"
+  
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+    ${MINGW_PREFIX}/bin/python setup.py install --prefix=${MINGW_PREFIX#\/} --root="${pkgdir}" --optimize=1 --skip-build -v
+
+  local PREFIX_WIN=$(cygpath -wm ${MINGW_PREFIX})
+}
+
