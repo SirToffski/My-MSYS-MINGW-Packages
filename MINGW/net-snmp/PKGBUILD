@@ -30,7 +30,7 @@ prepare() {
 
 build() {
   cd "${srcdir}/${_realname}-${pkgver}" || return 1
-  ./configure
+  ./configure \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
