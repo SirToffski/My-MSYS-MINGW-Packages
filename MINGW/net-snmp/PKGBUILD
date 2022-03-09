@@ -5,14 +5,16 @@ pkgver=5.9.1
 pkgrel=1
 pkgdesc="A suite of applications used to implement SNMP v1, SNMP v2c and SNMP v3 using both IPv4 and IPv6"
 arch=(any)
-mingw_arch=(mingw32 mingw64 ucrt64)
+mingw_arch=(mingw64 ucrt64)
 url="http://www.net-snmp.org/"
 license=('BSD')
-depends=("${MINGW_PACKAGE_PREFIX}-openssl")
+depends=("${MINGW_PACKAGE_PREFIX}-openssl"
+         "${MINGW_PACKAGE_PREFIX}-libsystre")
 makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
              git
              make
              diffutils)
+options=('!emptydirs' '!makeflags')             
 source=(https://downloads.sourceforge.net/${_realname}/${_realname}-${pkgver}.tar.gz{,.asc})
 sha512sums=('30989e43034e17433b885854490f2f37470a532cb7cab0d2a3beb37f5f3c2b10e803af125a5177d87fc0a36cecc266fefc016b609427b558f36567c2f1a84b20'
             'SKIP')
@@ -22,34 +24,38 @@ validpgpkeys=('8AAA779B597B405BBC329B6376CF47B8A77C5329'
 
 
 prepare() {
-  cd "${srcdir}/${_realname}-${pkgver}" || return 1
-
-  autoreconf -fiv
+  cd "${srcdir}/${_realname}-${pkgver}"
+  [ -x configure ] || ./autogen.sh
 }
 
-
 build() {
-  cd "${srcdir}/${_realname}-${pkgver}" || return 1
-  ./configure \
+
+  [[ -d ${srcdir}/build-${MSYSTEM} ]] && rm -rf ${srcdir}/build-${MSYSTEM}
+  mkdir -p build-${MSYSTEM} && cd build-${MSYSTEM}
+
+  ../${_realname}-${pkgver}/configure \
+    --with-default-snmp-version="2" \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
     --target=${MINGW_CHOST} \
     --sysconfdir=${MINGW_PREFIX}/etc/netsnmp \
     --sbindir=${MINGW_PREFIX}/bin \
-    --with-mibdirs="${MINGW_PREFIX}/share/snmp/mibs" \
+    --enable-ucd-snmp-compatibility \
+    --mandir=${MINGW_PREFIX}/usr/share/man \
     --with-sys-contact="root@localhost" \
     --with-sys-location="Unknown" \
     --with-logfile="${MINGW_PREFIX}/var/log/snmpd.log" \
     --with-mib-modules="agentx disman/event-mib winExtDLL examples/example" \
     --disable-embedded-perl \
     --without-perl-modules \
+    --with-mibdirs="${MINGW_PREFIX}/share/snmp/mibs/" \
     --with-persistent-directory="${MINGW_PREFIX}/var/net-snmp"
   make NETSNMP_DONT_CHECK_VERSION=1
 }
 
 package() {
-  cd "${srcdir}/build-${MINGW_CHOST}"
+  cd ${srcdir}/build-${MSYSTEM}
   sed -i -e "s:install --basedir=\$\$dir:install --basedir=\$\$dir --root=${pkgdir}:" Makefile
   make DESTDIR="${pkgdir}" INSTALL_PREFIX="${pkgdir}" INSTALLDIRS=vendor install
 }
